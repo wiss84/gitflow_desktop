@@ -824,17 +824,12 @@ class GitFlowApp:
 
     # ─────────────────────────── Event handlers ─────────────────────────────────
 
-    def _pick_folder(self, e):
-        def result(ev: ft.FilePickerResultEvent):
-            if ev.path:
-                self.path_input.value = ev.path
-                self.page.update()
-                self._load_path(None)
-
-        picker = ft.FilePicker(on_result=result)
-        self.page.overlay.append(picker)
-        self.page.update()
-        picker.get_directory_path(dialog_title="Select project directory")
+    async def _pick_folder(self, e):
+        path = await ft.FilePicker().get_directory_path(dialog_title="Select project directory")
+        if path:
+            self.path_input.value = path
+            self.page.update()
+            self._load_path(None)
 
     def _load_path(self, e):
         path = self.path_input.value.strip() if self.path_input.value else ""
@@ -878,10 +873,12 @@ class GitFlowApp:
             content=ft.Text(f"This will permanently discard all changes to:\n{file_path}", size=13, color=TEXT),
             actions=[
                 ft.TextButton("Cancel", style=ft.ButtonStyle(color=TEXT_DIM), on_click=confirm),
-                ft.Button("Discard", style=ft.ButtonStyle(bgcolor=RED, color=TEXT), on_click=confirm),
+                ft.ElevatedButton("Discard", style=ft.ButtonStyle(bgcolor=RED, color=TEXT), on_click=confirm),
             ],
         )
-        self.page.open(dlg)
+        self.page.dialog = dlg
+        dlg.open = True
+        self.page.update()
 
     def _show_diff(self, file_path: str, staged: bool):
         if not self.git_manager:
@@ -902,6 +899,10 @@ class GitFlowApp:
                 color = TEXT_DIM
             lines.append(ft.Text(line, size=11, color=color, font_family="JetBrains", selectable=True))
 
+        def close_dlg(e):
+            dlg.open = False
+            self.page.update()
+
         dlg = ft.AlertDialog(
             title=ft.Text(f"Diff: {file_path}", size=14, color=BLUE),
             content=ft.Container(
@@ -909,9 +910,11 @@ class GitFlowApp:
                 bgcolor=BG, border_radius=6, padding=10,
                 width=700, height=450,
             ),
-            actions=[ft.TextButton("Close", on_click=lambda _: self.page.close(dlg))],
+            actions=[ft.TextButton("Close", on_click=close_dlg)],
         )
-        self.page.open(dlg)
+        self.page.dialog = dlg
+        dlg.open = True
+        self.page.update()
 
     def _add_all(self, e):
         if self.git_manager:
@@ -1042,10 +1045,12 @@ class GitFlowApp:
             content=ft.Text("This cannot be undone.", size=13, color=TEXT_DIM),
             actions=[
                 ft.TextButton("Cancel", style=ft.ButtonStyle(color=TEXT_DIM), on_click=confirm),
-                ft.Button("Delete", style=ft.ButtonStyle(bgcolor=RED, color=TEXT), on_click=confirm),
+                ft.ElevatedButton("Delete", style=ft.ButtonStyle(bgcolor=RED, color=TEXT), on_click=confirm),
             ],
         )
-        self.page.open(dlg)
+        self.page.dialog = dlg
+        dlg.open = True
+        self.page.update()
 
     def _merge_branch(self, e):
         if not self.git_manager:

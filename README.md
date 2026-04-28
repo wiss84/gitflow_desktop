@@ -2,7 +2,7 @@
 
 A modern, cross-platform desktop GUI for Git and GitFlow workflows. Built with [Flet](https://flet.dev) (Flutter × Python), GitFlow Desktop provides an intuitive visual interface for managing Git repositories without memorizing command-line syntax.
 
-![GitFlow Desktop Screenshot](docs/screenshots/main.png)
+![GitFlow Desktop Screenshot](GITFLOW.PNG)
 
 ---
 
